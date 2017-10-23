@@ -233,8 +233,10 @@ import UIKit
     private let leftHandle: CALayer = CALayer()
     private let rightHandle: CALayer = CALayer()
 
-    fileprivate let minLabel: CATextLayer = CATextLayer()
-    fileprivate let maxLabel: CATextLayer = CATextLayer()
+    open let minLabel: VerticallyCenteredTextLayer = VerticallyCenteredTextLayer()
+    open let maxLabel: VerticallyCenteredTextLayer = VerticallyCenteredTextLayer()
+    private let leftMinLabel: CALayer = CALayer()
+    private let rightMaxLabel: CALayer = CALayer()
 
     private var minLabelTextSize: CGSize = .zero
     private var maxLabelTextSize: CGSize = .zero
@@ -412,19 +414,25 @@ import UIKit
 
         // draw the text labels
         let labelFontSize: CGFloat = 12.0
-        let labelFrame: CGRect = CGRect(x: 0.0, y: 0.0, width: 75.0, height: 14.0)
+        let labelFrame: CGRect = CGRect(x: 8.0, y: 3.0, width: 50, height: 42)
 
         minLabelFont = UIFont.systemFont(ofSize: labelFontSize)
         minLabel.alignmentMode = kCAAlignmentCenter
         minLabel.frame = labelFrame
         minLabel.contentsScale = UIScreen.main.scale
-        layer.addSublayer(minLabel)
+        leftMinLabel.frame = CGRect(x: 0, y: 0, width: 50, height: 42)
+        leftMinLabel.contents = UIImage(named: "Shape")?.cgImage
+        leftMinLabel.addSublayer(minLabel)
+        layer.addSublayer(leftMinLabel)
 
         maxLabelFont = UIFont.systemFont(ofSize: labelFontSize)
         maxLabel.alignmentMode = kCAAlignmentCenter
         maxLabel.frame = labelFrame
         maxLabel.contentsScale = UIScreen.main.scale
-        layer.addSublayer(maxLabel)
+        rightMaxLabel.frame = CGRect(x: 0, y: 0, width: 50, height: 42)
+        rightMaxLabel.contents = UIImage(named: "Shape")?.cgImage
+        rightMaxLabel.addSublayer(maxLabel)
+        layer.addSublayer(rightMaxLabel)
 
         setupStyle()
 
@@ -489,11 +497,19 @@ import UIKit
         }
 
         if let nsstring = minLabel.string as? NSString {
-            minLabelTextSize = nsstring.size(withAttributes: [NSAttributedStringKey.font: minLabelFont])
+            if minLabel.name == "fixSize" {
+                minLabelTextSize = CGSize(width: 33, height: 28)
+            } else {
+                minLabelTextSize = nsstring.size(withAttributes: [NSAttributedStringKey.font: minLabelFont])
+            }
         }
 
         if let nsstring = maxLabel.string as? NSString {
-            maxLabelTextSize = nsstring.size(withAttributes: [NSAttributedStringKey.font: maxLabelFont])
+            if maxLabel.name == "fixSize" {
+                maxLabelTextSize = CGSize(width: 33, height: 28)
+            } else {
+                maxLabelTextSize = nsstring.size(withAttributes: [NSAttributedStringKey.font: maxLabelFont])
+            }
         }
     }
 
@@ -572,50 +588,50 @@ import UIKit
         let newSpacingBetweenTextLabels: CGFloat = newLeftMostXInMaxLabel - newRightMostXInMinLabel
 
         if disableRange || newSpacingBetweenTextLabels > minSpacingBetweenLabels {
-            minLabel.position = newMinLabelCenter
-            maxLabel.position = newMaxLabelCenter
+            leftMinLabel.position = newMinLabelCenter
+            rightMaxLabel.position = newMaxLabelCenter
 
-            if minLabel.frame.minX < 0.0 {
-                minLabel.frame.origin.x = 0.0
+            if leftMinLabel.frame.minX < 0.0 {
+                leftMinLabel.frame.origin.x = 0.0
             }
 
-            if maxLabel.frame.maxX > frame.width {
-                maxLabel.frame.origin.x = frame.width - maxLabel.frame.width
+            if rightMaxLabel.frame.maxX > frame.width {
+                rightMaxLabel.frame.origin.x = frame.width - rightMaxLabel.frame.width
             }
         } else {
             let increaseAmount: CGFloat = minSpacingBetweenLabels - newSpacingBetweenTextLabels
-            minLabel.position = CGPoint(x: newMinLabelCenter.x - increaseAmount / 2.0, y: newMinLabelCenter.y)
-            maxLabel.position = CGPoint(x: newMaxLabelCenter.x + increaseAmount / 2.0, y: newMaxLabelCenter.y)
+            leftMinLabel.position = CGPoint(x: newMinLabelCenter.x - increaseAmount / 2.0, y: newMinLabelCenter.y)
+            rightMaxLabel.position = CGPoint(x: newMaxLabelCenter.x + increaseAmount / 2.0, y: newMaxLabelCenter.y)
 
             // Update x if they are still in the original position
-            if minLabel.position.x == maxLabel.position.x {
-                minLabel.position.x = leftHandle.frame.midX
-                maxLabel.position.x = leftHandle.frame.midX + minLabel.frame.width / 2.0 + minSpacingBetweenLabels + maxLabel.frame.width / 2.0
+            if leftMinLabel.position.x == rightMaxLabel.position.x {
+                leftMinLabel.position.x = leftHandle.frame.midX
+                rightMaxLabel.position.x = leftHandle.frame.midX + leftMinLabel.frame.width / 2.0 + minSpacingBetweenLabels + rightMaxLabel.frame.width / 2.0
             }
 
-            if minLabel.frame.minX < 0.0 {
-                minLabel.frame.origin.x = 0.0
-                maxLabel.frame.origin.x = minSpacingBetweenLabels + minLabel.frame.width
+            if leftMinLabel.frame.minX < 0.0 {
+                leftMinLabel.frame.origin.x = 0.0
+                rightMaxLabel.frame.origin.x = minSpacingBetweenLabels + leftMinLabel.frame.width
             }
 
-            if maxLabel.frame.maxX > frame.width {
-                maxLabel.frame.origin.x = frame.width - maxLabel.frame.width
-                minLabel.frame.origin.x = maxLabel.frame.origin.x - minSpacingBetweenLabels - minLabel.frame.width
+            if rightMaxLabel.frame.maxX > frame.width {
+                rightMaxLabel.frame.origin.x = frame.width - rightMaxLabel.frame.width
+                leftMinLabel.frame.origin.x = rightMaxLabel.frame.origin.x - minSpacingBetweenLabels - leftMinLabel.frame.width
             }
         }
     }
 
     private func updateFixedLabelPositions() {
-        minLabel.position = CGPoint(x: xPositionAlongLine(for: minValue),
+        leftMinLabel.position = CGPoint(x: xPositionAlongLine(for: minValue),
                                     y: sliderLine.frame.minY - (minLabelTextSize.height / 2.0) - (handleDiameter / 2.0) - labelPadding)
-        maxLabel.position = CGPoint(x: xPositionAlongLine(for: maxValue),
+        rightMaxLabel.position = CGPoint(x: xPositionAlongLine(for: maxValue),
                                     y: sliderLine.frame.minY - (maxLabelTextSize.height / 2.0) - (handleDiameter / 2.0) - labelPadding)
-        if minLabel.frame.minX < 0.0 {
-            minLabel.frame.origin.x = 0.0
+        if leftMinLabel.frame.minX < 0.0 {
+            leftMinLabel.frame.origin.x = 0.0
         }
 
-        if maxLabel.frame.maxX > frame.width {
-            maxLabel.frame.origin.x = frame.width - maxLabel.frame.width
+        if rightMaxLabel.frame.maxX > frame.width {
+            rightMaxLabel.frame.origin.x = frame.width - rightMaxLabel.frame.width
         }
     }
 
