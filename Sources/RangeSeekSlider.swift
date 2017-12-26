@@ -593,7 +593,6 @@ import UIKit
         
         if disableRange || newSpacingBetweenTextLabels > minSpacingBetweenLabels {
             leftMinLabel.position = newMinLabelCenter
-            leftMinLabel.is
             rightMaxLabel.position = newMaxLabelCenter
 
             if leftMinLabel.frame.minX < 0.0 {
