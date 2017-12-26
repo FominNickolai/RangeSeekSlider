@@ -586,9 +586,14 @@ import UIKit
         let newLeftMostXInMaxLabel: CGFloat = newMaxLabelCenter.x - maxLabelTextSize.width / 2.0
         let newRightMostXInMinLabel: CGFloat = newMinLabelCenter.x + minLabelTextSize.width / 2.0
         let newSpacingBetweenTextLabels: CGFloat = newLeftMostXInMaxLabel - newRightMostXInMinLabel
-
+    
+        if disableRange {
+            leftMinLabel.isHidden = true
+        }
+        
         if disableRange || newSpacingBetweenTextLabels > minSpacingBetweenLabels {
             leftMinLabel.position = newMinLabelCenter
+            leftMinLabel.is
             rightMaxLabel.position = newMaxLabelCenter
 
             if leftMinLabel.frame.minX < 0.0 {
